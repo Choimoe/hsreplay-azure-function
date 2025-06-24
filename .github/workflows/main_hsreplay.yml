@@ -18,37 +18,33 @@ env:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    environment: dev
-    permissions:
-      contents: read
-
     steps:
-      - name: 'Checkout GitHub Action'
+      - name: 'Checkout repository'
         uses: actions/checkout@v4
 
-      - name: Setup Python ${{ env.PYTHON_VERSION }} Environment
+      - name: 'Set up Python version'
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: 'Resolve Project Dependencies Using Pip'
+      - name: 'Install dependencies'
         run: |
-          pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt --target=".python_packages/lib/site-packages"
-          popd
-
-      - name: Zip artifact for deployment
+          python -m venv .venv
+          source .venv/bin/activate
+          pip install --upgrade pip
+          pip install -r ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/requirements.txt
+      
+      - name: 'Archive function app for deployment'
         run: |
           cd ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
           zip -r ../release.zip .
+          cd ..
+          cd .venv/lib/python${{ env.PYTHON_VERSION }}/site-packages
+          zip -r ../../../../release.zip .
 
-      - name: 'Run Azure Functions Action'
+      - name: 'Deploy to Azure Functions'
         uses: Azure/functions-action@v1
-        id: fa
         with:
           app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
-          package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
-          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }} # Remove publish-profile to use Azure RBAC
-          scm-do-build-during-deployment: true
-          enable-oryx-build: true
+          package: 'release.zip'
+          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
