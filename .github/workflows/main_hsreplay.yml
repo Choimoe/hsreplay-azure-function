@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 
 env:
-  AZURE_FUNCTIONAPP_NAME: 'hsreplay'
+  AZURE_FUNCTIONAPP_NAME: 'HSReplay'
   AZURE_FUNCTIONAPP_PACKAGE_PATH: 'GetHearthstoneData'
   PYTHON_VERSION: '3.12'
 
