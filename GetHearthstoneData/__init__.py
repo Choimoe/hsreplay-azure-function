@@ -62,8 +62,10 @@ def get_trinket_stats():
         logging.error(f"无法从 HSReplay API 获取数据: {e}")
         return None
 
-def main(req: func.HttpRequest) -> func.HttpResponse:
-    logging.info('Python HTTP trigger function processed a request.')
+def main(mytimer: func.TimerRequest) -> None:
+    if mytimer.past_due:
+        logging.info('The timer is past due!')
+    logging.info('Python timer trigger function executed.')
 
     if not CONNECTION_STRING:
         logging.error("AZURE_STORAGE_CONNECTION_STRING 环境变量未设置。")
@@ -123,9 +125,3 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         logging.info(f"成功将处理后的数据保存到 '{PROCESSED_DATA_BLOB_NAME}'。")
     except Exception as e:
         logging.error(f"上传处理结果到 Blob Storage 失败: {e}")
-    
-    return func.HttpResponse(
-        body=json.dumps(sorted_trinkets, ensure_ascii=False, indent=2),
-        status_code=200,
-        mimetype="application/json; charset=utf-8"
-    )
