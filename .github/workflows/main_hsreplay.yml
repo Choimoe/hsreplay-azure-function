@@ -15,10 +15,6 @@ env:
   AZURE_FUNCTIONAPP_PACKAGE_PATH: 'GetHearthstoneData'
   PYTHON_VERSION: '3.12'
 
-permissions:
-  id-token: write
-  contents: read
-
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -30,21 +26,16 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-
-      - name: 'Log in to Azure'
-        uses: azure/login@v1
-        with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_0D4A412FC68E469BBD4FA88A6E2D9E04 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_8B5CFF5F105C4B5FBEAA2361CF260007 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_A4CF611A947542549E79EB7081E2D26D }}
-
-      - name: 'Install dependencies, package, and archive'
+      
+      - name: 'Install dependencies and create deployment package'
         run: |
           python -m venv .venv
           source .venv/bin/activate
           pip install --upgrade pip
-          pip install -r ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/requirements.txt
-          cd ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+          pushd ./${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+          pip install -r requirements.txt
+          popd
+          cd ./${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
           zip -r ../release.zip .
           cd ../.venv/lib/python${{ env.PYTHON_VERSION }}/site-packages
           zip -ur ../../../../release.zip .
@@ -54,3 +45,4 @@ jobs:
         with:
           app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
           package: 'release.zip'
+          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
