@@ -41,7 +41,7 @@ jobs:
           zip -ur ../../../../release.zip .
 
       - name: 'Deploy to Azure Functions'
-        uses: Azure/functions-action@v1
+        uses: azure/webapps-deploy@v2
         with:
           app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
           package: 'release.zip'
