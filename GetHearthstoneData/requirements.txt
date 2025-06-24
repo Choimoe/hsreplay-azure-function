@@ -1,0 +1,8 @@
+# Azure Functions and HTTP triggers
+azure-functions
+
+# For making HTTP requests to APIs
+requests
+
+# Azure Blob Storage client library for persistence
+azure-storage-blob
